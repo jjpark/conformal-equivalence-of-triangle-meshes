@@ -1,0 +1,80 @@
+/* Parses records containing a number and zero or more subrecords */
+%{
+#include "main.hpp"
+
+using namespace Eigen;
+using namespace std;
+
+int yyerror(const char *s);
+int yylex();
+
+vector<float> num;
+vector<vector<float> > numbers;
+vector<int> face;
+vector<vector<int> > faces;
+
+object *data = new object(); 
+
+%}
+
+%union
+{
+    float fval;
+}
+
+%defines
+
+%token <fval> NUMBER
+%token V
+%token F
+
+%%
+blocks: block blocks | block
+{
+
+};
+block: VERTICES | FACES {
+  data->nums = numbers;
+  data->facets = faces;
+};
+
+VERTICES: VERTEX VERTICES | VERTEX {};
+
+FACES: FACE FACES | FACE {};
+
+VERTEX: V NUMBER NUMBER NUMBER {
+    numbers.push_back(vector<float> {$2,$3,$4});
+};
+
+FACE: F NUMBER NUMBER NUMBER {
+  faces.push_back(vector<int> {(int)$2,(int)$3,(int)$4});
+}; 
+%%
+
+static FlexLexer *lexer;
+
+int yyerror(const char * s)
+{
+   cerr << "Parse error: " << s << endl;
+   return 0;
+}
+
+int yylex()
+{
+   return lexer->yylex();
+}
+
+object * parse_test(istream &datafile)
+{
+   // Construct the lexer.
+   lexer = new yyFlexLexer(&datafile);
+   // Run the parser.
+   if(yyparse())
+   {
+       cerr << "Parse failed!" << endl;
+       exit(1);
+   }
+
+   delete lexer;
+  return data;  
+}

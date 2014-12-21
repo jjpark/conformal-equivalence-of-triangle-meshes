@@ -1,0 +1,79 @@
+Conformal Equivalence of Triangle Meshes
+Jeong Joon Park
+
+System requirements:
+OpenGl, python, Scipy, Numpy, C++, Linux
+
+The program is splitted into two parts:
+i) A python part that produces texture coordinates
+ii) A C++ part that renders shapes using the texture coordinates
+
+How to run the code:
+i) Python parts
+run python class.py obj_file_name.obj
+example: python class.py cathead.obj
+The computation will take some time. Note that during the computation there
+will be some information printed such as 
+
+energy: -804.691973632
+u_size: 0.0
+flat: 0.0956475913837
+max angle: 0.765448658697
+size :1.62516799758
+
+while energy indicates the energy, u_size indicates the size of the vector u
+and flat represents the average 2*pi - angle_sum
+and max angle represents the max 2*pi - angle_sum
+size represents the normalized value of the 2*pi - angle_sum
+
+After the computation is over, which can take more than 15 minutes, a obj_file_name.txt 
+file will be created.
+This file contains the texture coordinates that is a parameterization of 
+the mesh. 
+
+Now let's go to the C++ parts
+
+ii) C++ part
+To build the renderer type
+make
+To run the renderer run
+./render num1 texture_coordinates objfile
+
+where num1 is either 0 or 1; 0 for parameterized plane and 1 for textured shape.
+texture_coordinates is the txt file created by the python code.
+objfile .obj file format object.
+
+example: 
+./render 1 cathead.txt <cathead.obj
+will create a textured cathead
+
+User Interface:
+Scroll up for zoom in, down for zoom out.
+Right click drag for translation, left click drag for rotation.
+Note that the rotation only works in x-y axis. You need to modify 
+opengl.cpp code manually to rotate in z axis. In order to do this,
+in the drawScene() function, add glRotatef(degree, 0, 0 ,1).
+To only display the lines, press d. Press d again to display only vertices.
+Press d once more to return to the original
+
+Disclaimer:
+The class.py is currently in the mode to parameterize a free boundary case.
+In order to test for a fixed boundary case and cone singularities, you will
+need to manually call other functions defined and change the main function quite a bit. 
+
+To get a sense of how those works please refer to the following functions:
+
+rectangular parameterization:
+energy_rec()
+ePrime_rec()
+also has to change list "target_angl"
+and manually add vertices to the list "corners" to set 4 corners
+
+cone singularities:
+energy_cone()
+ePrime_cone()
+also has to edge vertices to the list "corners"
+
+For stereographical projection use the stereo_project function
+and commented out code right above the function to visually see the
+projection.
